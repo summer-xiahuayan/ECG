@@ -139,29 +139,11 @@ xlabel('频率(Hz)');ylabel('幅值');title('线性滤波后');grid;
 
 
 % 均值滤波
-X2 = result;
+X2 = abs(X3);
 X2 = filter(ones(1, 30), 1, X2);
-figure(11);
+figure(7);
 plot(X2(1:3000));
 title('均值滤波后信号');
-
-% 对均值滤波后的信号进行FFT
-Y2 = fft(X2,N); % 计算FFT
-Y2=fftshift(Y2);
-P2_2 = abs(Y2/N); % 双边频谱
-P1_2 = P2_2(1:N/2+1); % 单边频谱
-P1_2(2:end-1) = 2*P1_2(2:end-1);
-
-% 绘制均值滤波后信号的FFT结果
-figure(12);
-plot(f, P2_2);
-ylim([0, max(P1_2)]); % 设置纵坐标显示范围从0到P1_1的最大值
-title('均值滤波后信号频谱');
-xlabel('Frequency (Hz)');
-ylabel('|P1_2(f)|');
-
-
-
 
 
 

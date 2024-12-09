@@ -227,3 +227,19 @@ disp(averageDifference)
     % 保存每个图形
  %   saveas(figs(i), sprintf('ecg_%d.png', i));
 %end
+
+
+
+
+
+figure(15)
+subplot(3,2,1);plot(TIME,M);title('原始心电信号波形');grid;axis([4500 7500 0 300]);
+subplot(3,2,2);plot(TIME,m);title('低通滤波后的波形');grid;axis([4500 7500 0 300]);
+subplot(3,2,3);plot(TIME,m2);title('带阻滤波后波形');grid;axis([4500 7500 20 150]);
+subplot(3,2,4); plot(TIME,result);title('线性滤波后波形');grid;axis([4500 7500 -80 80]);  
+subplot(3,2,5);plot(X2);title('均值滤波后波形');grid;axis([4500 7500 -1000 1000]);
+subplot(3,2,6);plot(X2, 'b');   hold on; plot(newLocs, newPks, 'r*', 'MarkerSize', 10);title('心跳检测算法'); grid;axis([4500 7500 -1000 1000]);
+
+
+
+

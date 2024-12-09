@@ -1,4 +1,6 @@
+![ecg_1](./README.assets/origin-ecg.png)
 
+![ecg_1](./README.assets/origin-ecg1.png)
 
 ![ecg_1](./README.assets/ecg_7.png)
 
@@ -20,11 +22,13 @@
 
 ![ecg_1](./README.assets/ecg_1.png)
 
+![average](./README.assets/average.png)
 
 
-![ecg_1](./README.assets/ecg_11.png)
 
-![ecg_1](./README.assets/ecg_12.png)
+
+
+![ecg_1](./README.assets/average-fre.png)
 
 
 

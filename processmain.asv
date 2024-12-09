@@ -29,10 +29,15 @@ figure(2)
 subplot(2,1,1);
 plot(TIME,M);
 xlabel('t(s)');ylabel('mv');title('原始心电信号波形');grid;
- 
 subplot(2,1,2);
 plot(TIME,m);
 xlabel('t(s)');ylabel('mv');title('低通滤波后的时域图形');grid;
+
+figure(14)
+plot(TIME,M);
+xlabel('t(s)');ylabel('mv');title('原始心电信号波形');grid;
+axis([4500 7500 0 300])
+
    
 N=512
 n=0:N-1;
@@ -142,8 +147,15 @@ xlabel('频率(Hz)');ylabel('幅值');title('线性滤波后');grid;
 X2 = result;
 X2 = filter(ones(1, 30), 1, X2);
 figure(11);
-plot(X2);
-title('均值滤波后信号');
+subplot(2,1,1);
+plot(result);axis([4500 7500 -80 80])
+title('均值滤波前信号');grid;
+subplot(2,1,2);
+plot(X2);axis([4500 7500 -1000 1000])
+title('均值滤波后信号');grid;
+
+
+
 
 % 对均值滤波后的信号进行FFT
 Y2 = fft(X2,N); % 计算FFT
@@ -154,35 +166,50 @@ P1_2(2:end-1) = 2*P1_2(2:end-1);
 
 % 绘制均值滤波后信号的FFT结果
 figure(12);
-plot(f, P2_2);
 ylim([0, max(P1_2)]); % 设置纵坐标显示范围从0到P1_1的最大值
-title('均值滤波后信号频谱');
-xlabel('Frequency (Hz)');
-ylabel('|P1_2(f)|');
+subplot(2,1,1);
+plot(f,abs(fftshift(fft(result,N)))/N);
+title('均值滤波前信号频谱');grid;
+subplot(2,1,2);
+plot(f, P2_2);
+title('均值滤波后信号频谱');grid;
 
 
-[pks, locs] = findpeaks(X2, 'MinPeakHeight', 400, 'MinPeakDistance', 50);
-[pks2, locs2] = findpeaks(pks, 'MinPeakHeight', 400, 'MinPeakDistance', 1);
+% 假设 [pks, locs] = findpeaks(X2, 'MinPeakHeight', 400, 'MinPeakDistance', 50);
 
-% 初始化一个与locs2同样长度的数组，用于存储映射后的位置
-mapped_locs2 = zeros(size(locs2));
+% 计算相邻峰值位置之间的差值
+differences = diff(locs);
 
-% 遍历locs2中的每个位置
-for i = 1:length(locs2)
-    % 找到pks2中第i个峰值在pks中的位置
-    pks_peak_index = locs2(i);
-    % 找到这个峰值在X2中的位置，即locs中对应的位置
-    mapped_locs2(i) = locs(pks_peak_index);
+% 求这些差值的平均值
+averageDifference = mean(differences);
+
+% 计算阈值，即平均间隔的1/3
+threshold = averageDifference*3 / 5;
+
+% 初始化新的峰值列表
+newPks = pks(1); % 从第一个峰值开始
+newLocs = locs(1); % 从第一个峰值位置开始
+
+% 遍历原始的峰值位置，从第二个峰值开始
+for i = 2:length(locs)
+    % 如果当前峰值与上一个峰值的间隔大于阈值，则添加当前峰值
+    if locs(i) - newLocs(end) > threshold
+        newPks(end+1) = pks(i);
+        newLocs(end+1) = locs(i);
+    elseif pks(i) > newPks(end) % 如果当前峰值的高度大于上一个保留的峰值
+        % 则替换上一个峰值为当前峰值
+        newPks(end) = pks(i);
+        newLocs(end) = locs(i);
+    end
 end
-
-% mapped_locs2现在包含了locs2映射回X2的结果
 
 
 figure(13)
 plot(X2, 'b');   % 绘制原始数据，'b'表示蓝色
 hold on;        % 保持当前图形，以便在上面添加新的图形层
 % 绘制峰值
-plot(mapped_locs2, pks2, 'r*', 'MarkerSize', 10); % 'r*'表示红色星号标记
+plot(newLocs, newPks, 'r*', 'MarkerSize', 10); % 'r*'表示红色星号标记
+axis([4500 7500 -1500 1500])
 % 可选：添加图例和标签
 legend('Original Data', 'Peaks');
 xlabel('Data Points');
@@ -191,8 +218,8 @@ ylabel('Amplitude');
 title('Peak Detection');
 hold off; % 释放图形，完成绘图
 
-heart_rate=length(pks)/(length(M)/Fs/60)
-
+heart_rate=length(newPks)/(length(M)/Fs/60)
+disp(averageDifference)
 % 获取当前所有图形句柄
 %figs = findobj('Type', 'figure');
 

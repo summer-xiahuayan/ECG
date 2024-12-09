@@ -29,10 +29,15 @@ figure(2)
 subplot(2,1,1);
 plot(TIME,M);
 xlabel('t(s)');ylabel('mv');title('原始心电信号波形');grid;
- 
 subplot(2,1,2);
 plot(TIME,m);
 xlabel('t(s)');ylabel('mv');title('低通滤波后的时域图形');grid;
+
+figure(14)
+plot(TIME,M);
+xlabel('t(s)');ylabel('mv');title('原始心电信号波形');grid;
+axis([4500 7500 0 300])
+
    
 N=512
 n=0:N-1;
@@ -142,8 +147,15 @@ xlabel('频率(Hz)');ylabel('幅值');title('线性滤波后');grid;
 X2 = result;
 X2 = filter(ones(1, 30), 1, X2);
 figure(11);
-plot(X2);
-title('均值滤波后信号');
+subplot(2,1,1);
+plot(result);axis([4500 7500 -80 80])
+title('均值滤波前信号');grid;
+subplot(2,1,2);
+plot(X2);axis([4500 7500 -1000 1000])
+title('均值滤波后信号');grid;
+
+
+
 
 % 对均值滤波后的信号进行FFT
 Y2 = fft(X2,N); % 计算FFT
@@ -154,11 +166,12 @@ P1_2(2:end-1) = 2*P1_2(2:end-1);
 
 % 绘制均值滤波后信号的FFT结果
 figure(12);
+subplot(2,1,1);
+plot(f,abs(fftshift(fft(result,N)))/N);
+title('均值滤波前信号频谱');grid;
+subplot(2,1,2);
 plot(f, P2_2);
-ylim([0, max(P1_2)]); % 设置纵坐标显示范围从0到P1_1的最大值
-title('均值滤波后信号频谱');
-xlabel('Frequency (Hz)');
-ylabel('|P1_2(f)|');
+title('均值滤波后信号频谱');grid;
 
 
 % 假设 [pks, locs] = findpeaks(X2, 'MinPeakHeight', 400, 'MinPeakDistance', 50);

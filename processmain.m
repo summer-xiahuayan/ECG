@@ -50,7 +50,7 @@ f=(-(wsam)/2+(0:N-1)*(wsam)/N)/(2*pi);
 
 figure(3)
 subplot(2,1,1)
-plot(f,P2_0);axis([-80,80,1,50]);grid;      %画出频谱图
+plot(f,P2_0);axis([-800,800,1,50]);grid;      %画出频谱图
 xlabel('频率(HZ)');ylabel('幅值');title('心电信号频谱图');
  
 mfa=fft(m,N);                    %进行频谱变换（傅里叶变换）
@@ -76,7 +76,7 @@ xlabel('归一化频率');ylabel('功率(dB)');title('心电信号的功率谱');
 Me=100;               %滤波器阶数
 L=100;                %窗口长度
 beta=100;             %衰减系数
-Fs=150;
+Fs=360;
 wc1=49/Fs*pi;     %wc1为高通滤波器截止频率，对应51Hz
 wc2=51/Fs*pi     ;%wc2为低通滤波器截止频率，对应49Hz
 h=ideal_lp(0.132*pi,Me)-ideal_lp(wc1,Me)+ideal_lp(wc2,Me); %h为陷波器冲击响应
@@ -126,7 +126,7 @@ title('线性滤波器')
 figure(9)  
 subplot(211); plot(TIME,m2);   
 xlabel('t(s)');ylabel('幅值');title('原始信号');grid  
-subplot(212); plot(TIME(1:3000),result(1:3000));   
+subplot(212); plot(TIME,result);   
 xlabel('t(s)');ylabel('幅值');title('线性滤波后信号');grid  
     
 figure(10)  
@@ -142,7 +142,7 @@ xlabel('频率(Hz)');ylabel('幅值');title('线性滤波后');grid;
 X2 = result;
 X2 = filter(ones(1, 30), 1, X2);
 figure(11);
-plot(X2(1:3000));
+plot(X2);
 title('均值滤波后信号');
 
 % 对均值滤波后的信号进行FFT
@@ -161,10 +161,51 @@ xlabel('Frequency (Hz)');
 ylabel('|P1_2(f)|');
 
 
+% 假设 [pks, locs] = findpeaks(X2, 'MinPeakHeight', 400, 'MinPeakDistance', 50);
+
+% 计算相邻峰值位置之间的差值
+differences = diff(locs);
+
+% 求这些差值的平均值
+averageDifference = mean(differences);
+
+% 计算阈值，即平均间隔的1/3
+threshold = averageDifference*3 / 5;
+
+% 初始化新的峰值列表
+newPks = pks(1); % 从第一个峰值开始
+newLocs = locs(1); % 从第一个峰值位置开始
+
+% 遍历原始的峰值位置，从第二个峰值开始
+for i = 2:length(locs)
+    % 如果当前峰值与上一个峰值的间隔大于阈值，则添加当前峰值
+    if locs(i) - newLocs(end) > threshold
+        newPks(end+1) = pks(i);
+        newLocs(end+1) = locs(i);
+    elseif pks(i) > newPks(end) % 如果当前峰值的高度大于上一个保留的峰值
+        % 则替换上一个峰值为当前峰值
+        newPks(end) = pks(i);
+        newLocs(end) = locs(i);
+    end
+end
 
 
+figure(13)
+plot(X2, 'b');   % 绘制原始数据，'b'表示蓝色
+hold on;        % 保持当前图形，以便在上面添加新的图形层
+% 绘制峰值
+plot(newLocs, newPks, 'r*', 'MarkerSize', 10); % 'r*'表示红色星号标记
+axis([4500 7500 -1500 1500])
+% 可选：添加图例和标签
+legend('Original Data', 'Peaks');
+xlabel('Data Points');
+ylabel('Amplitude');
+% 可选：设置图形标题
+title('Peak Detection');
+hold off; % 释放图形，完成绘图
 
-
+heart_rate=length(newPks)/(length(M)/Fs/60)
+disp(averageDifference)
 % 获取当前所有图形句柄
 %figs = findobj('Type', 'figure');
 

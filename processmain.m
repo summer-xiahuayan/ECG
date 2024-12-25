@@ -174,7 +174,7 @@ plot(f, P2_2);
 title('均值滤波后信号频谱');grid;
 
 
-% 假设 [pks, locs] = findpeaks(X2, 'MinPeakHeight', 400, 'MinPeakDistance', 50);
+[pks, locs] = findpeaks(X2, 'MinPeakHeight', 400, 'MinPeakDistance', 50);
 
 % 计算相邻峰值位置之间的差值
 differences = diff(locs);
@@ -239,6 +239,61 @@ subplot(3,2,3);plot(TIME,m2);title('带阻滤波后波形');grid;axis([4500 7500 20 150
 subplot(3,2,4); plot(TIME,result);title('线性滤波后波形');grid;axis([4500 7500 -80 80]);  
 subplot(3,2,5);plot(X2);title('均值滤波后波形');grid;axis([4500 7500 -1000 1000]);
 subplot(3,2,6);plot(X2, 'b');   hold on; plot(newLocs, newPks, 'r*', 'MarkerSize', 10);title('心跳检测算法'); grid;axis([4500 7500 -1000 1000]);
+
+
+%------------------------------心跳的时域特征------------------------------
+% 计算相邻心跳之间的间隔（RR间期）
+RR_intervals = diff(newLocs);
+% 计算RR间期的均值
+mean_RR = mean(RR_intervals);
+% 计算RR间期的标准差
+sd_RR = std(RR_intervals);
+% 计算变异系数（CV），即标准差除以均值
+cv_RR = sd_RR / mean_RR;
+% 计算区间连续差的标准差（RMSSD）
+rmssd_RR = sqrt(sum((RR_intervals(1:end-1) - RR_intervals(2:end)).^2) / (length(RR_intervals) - 1));
+% 显示结果
+fprintf('心跳间隔的均值是: %f\n', mean_RR);
+fprintf('心跳间隔的标准差是: %f\n', sd_RR);
+fprintf('心跳间隔的变异系数（CV）是: %f\n', cv_RR);
+fprintf('区间连续差的标准差（RMSSD）是: %f\n', rmssd_RR);
+
+%------------------------------心跳的频域特征------------------------------
+Fs = 150;
+% 计算FFT
+N = length(X2);
+X2_fft = fft(X2);
+% 计算功率谱
+Pxx = (abs(X2_fft).^2) / N;
+% 确定频率范围
+f = (0:N-1) * (Fs / N);
+% 找到低频和高频范围的索引
+low_freq_range = f >= 0.04 & f <= 0.15;
+high_freq_range = f >= 0.15 & f <= 0.4;
+% 计算低频和高频功率
+low_freq_power = sum(Pxx(low_freq_range));
+high_freq_power = sum(Pxx(high_freq_range));
+% 计算功率比
+power_ratio = low_freq_power / high_freq_power;
+% 显示结果
+fprintf('低频功率是: %f\n', low_freq_power);
+fprintf('高频功率是: %f\n', high_freq_power);
+fprintf('功率比是: %f\n', power_ratio);
+
+%------------------------------心跳的分布特征------------------------------
+% 计算偏度
+skewness_value = skewness(X2);
+% 计算熵
+entropy_value = entropy(X2);
+% 显示结果
+fprintf('偏度值是: %f\n', skewness_value);
+fprintf('熵值是: %f\n', entropy_value);
+% 绘制直方图查看分布特征
+figure(16);
+histogram(X2);
+title('数据分布特征');
+
+
 
 
 
